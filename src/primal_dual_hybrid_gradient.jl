@@ -768,20 +768,26 @@ end
 
 """
 `optimize(params::PdhgParameters,
-          original_problem::QuadraticProgrammingProblem)`
+          original_problem::QuadraticProgrammingProblem;
+          initial_primal_solution::Vector{Float64} = zeros(0),
+          initial_dual_solution::Vector{Float64} = zeros(0))`
 
 Solves a quadratic program using primal-dual hybrid gradient.
 
 # Arguments
 - `params::PdhgParameters`: parameters.
 - `original_problem::QuadraticProgrammingProblem`: the QP to solve.
+- `initial_primal_solution::Vector{Float64}`: initial guess for the primal solution.
+- `initial_dual_solution::Vector{Float64}`: initial guess for the dual solution.
 
 # Returns
 A SaddlePointOutput struct containing the solution found.
 """
 function optimize(
   params::PdhgParameters,
-  original_problem::QuadraticProgrammingProblem,
+  original_problem::QuadraticProgrammingProblem;
+  initial_primal_solution::Vector{Float64} = zeros(0),
+  initial_dual_solution::Vector{Float64} = zeros(0),
 )
   validate(original_problem)
   qp_cache = cached_quadratic_program_info(original_problem)
@@ -800,14 +806,21 @@ function optimize(
     error("primal_importance must be positive and finite")
   end
 
+  primal_solution = isempty(initial_primal_solution) ? zeros(primal_size) : initial_primal_solution
+  dual_solution = isempty(initial_dual_solution) ? zeros(dual_size) : initial_dual_solution
+  if length(primal_solution) ≠ primal_size || length(dual_solution) ≠ dual_size
+    error("Size of primal and / or dual solution is incorrect")
+  end
+  dual_product = problem.constraint_matrix' * dual_solution
+
   # TODO: Correctly account for the number of kkt passes in
   # initialization
   solver_state = PdhgSolverState(
-    zeros(primal_size),  # current_primal_solution
-    zeros(dual_size),    # current_dual_solution
+    primal_solution,     # current_primal_solution
+    dual_solution,       # current_dual_solution
     zeros(primal_size),  # delta_primal
     zeros(dual_size),    # delta_dual
-    zeros(primal_size),  # current_dual_product
+    dual_product,        # current_dual_product
     initialize_solution_weighted_average(primal_size, dual_size),
     0.0,                 # step_size
     1.0,                 # primal_weight
