@@ -437,6 +437,26 @@ end
     @test output.primal_solution ≈ [1.0; 0.0; 6.0; 2.0] atol = 1.0e-9
     @test output.dual_solution ≈ [0.5; 4.0; 0.0] atol = 1.0e-9
   end
+  @testset "Initial guess: exact with rescaling" begin
+    parameters = generate_primal_dual_hybrid_gradient_params(
+      iteration_limit = 1,
+      primal_importance = 1.0,
+      verbosity = 0,
+      l_inf_ruiz_iterations = 10,
+      l2_norm_rescaling = true,
+      pock_chambolle_alpha = 1.0,
+    )
+    problem = example_lp()
+    output = FirstOrderLp.optimize(
+      parameters,
+      problem,
+      initial_primal_solution = [1.0; 0.0; 6.0; 2.0],
+      initial_dual_solution = [0.5; 4.0; 0.0],
+    )
+    @test output.primal_solution ≈ [1.0; 0.0; 6.0; 2.0] atol = 1.0e-9
+    @test output.dual_solution ≈ [0.5; 4.0; 0.0] atol = 1.0e-9
+  end
+
   @testset "Initial guess: incorrect size" begin
     parameters = generate_primal_dual_hybrid_gradient_params(
       iteration_limit = 1,

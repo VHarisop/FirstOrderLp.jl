@@ -806,9 +806,8 @@ function optimize(
     error("primal_importance must be positive and finite")
   end
 
-  # Validate dimension of initial solution and apply scaling.
+  # Validate dimension of initial solution and apply problem scaling.
   primal_solution = zeros(primal_size)
-  dual_solution = zeros(dual_size)
   if !isempty(initial_primal_solution)
     if length(initial_primal_solution) ≠ primal_size
       error("Dimension of initial primal solution is incorrect")
@@ -819,6 +818,7 @@ function optimize(
       )
     end
   end
+  dual_solution = zeros(dual_size)
   if !isempty(initial_dual_solution)
     if length(initial_dual_solution) ≠ dual_size
       error("Dimension of initial dual solution is incorrect")
@@ -836,8 +836,8 @@ function optimize(
   solver_state = PdhgSolverState(
     primal_solution,     # current_primal_solution
     dual_solution,       # current_dual_solution
-    primal_solution[:],  # delta_primal
-    dual_solution[:],    # delta_dual
+    zeros(primal_size),  # delta_primal
+    zeros(dual_size),    # delta_dual
     dual_product,        # current_dual_product
     initialize_solution_weighted_average(primal_size, dual_size),
     0.0,                 # step_size
