@@ -836,14 +836,14 @@ function optimize(
   solver_state = PdhgSolverState(
     primal_solution,     # current_primal_solution
     dual_solution,       # current_dual_solution
-    zeros(primal_size),  # delta_primal
-    zeros(dual_size),    # delta_dual
+    primal_solution[:],  # delta_primal
+    dual_solution[:],    # delta_dual
     dual_product,        # current_dual_product
     initialize_solution_weighted_average(primal_size, dual_size),
     0.0,                 # step_size
     1.0,                 # primal_weight
     false,               # numerical_error
-    0.0,                 # cumulative_kkt_passes
+    1.0,                 # cumulative_kkt_passes
     0,                   # total_number_iterations
     nothing,             # required_ratio
     nothing,             # ratio_step_sizes
